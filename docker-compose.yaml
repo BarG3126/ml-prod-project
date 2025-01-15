@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  app:
+    user: "${UID:-1000}"
+    hostname: "${HOST:-prod-project}"
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        USER_NAME: "${USER_NAME:-bar3126}"
+        USER_ID: "${UID:-1000}"
+    image: prod-project-template
+    container_name: prod-project-template
+    # env_file:
+    #  - .envs/.app
+    volumes:
+      - ./:/app/
+      - ~/.config/gcloud:${HOME}/.config/gcloud
+    ports:
+      - 8080:8080
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    init: true
+
+      
