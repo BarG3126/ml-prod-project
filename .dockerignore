@@ -1,0 +1,5 @@
+.
+
+!prod-project/
+!pyproject.toml
+!poetry.lock
