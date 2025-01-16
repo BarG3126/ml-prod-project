@@ -3,6 +3,8 @@
 
 SHELL = /usr/bin/env bash
 USER_NAME = $(shell whoami)
+USER_ID = $(shell id -u)
+HOST_NAME = $(shell hostname)
 
 ifeq (., $(shell which docker-compose))
 	DOCKER_COMPOSE_COMMAND = docker compose
@@ -10,13 +12,22 @@ else
 	DOCKER_COMPOSE_COMMAND = docker-compose
 endif
 
-DIRS_TO_VALIDATE = prod-project
-DOCKER_COMPOSR_RUN = ${DOCKER_COMPOSE_COMMAND}	 run --rm app
-DOCKER_COMPOSE_EXEC = ${DOCKER_COMPOSE_COMMAND} exec app
+SERVICE_NAME = app
+CONTAINER_NAME = prod-project-template-container
+
+DIRS_TO_VALIDATE = prod_project
+DOCKER_COMPOSR_RUN = ${DOCKER_COMPOSE_COMMAND}	 run --rm $(SERVICE_NAME)
+DOCKER_COMPOSE_EXEC = ${DOCKER_COMPOSE_COMMAND} exec $(SERVICE_NAME)
+
+export
 
 ## returns: true if the stem is a non-empty environment variable, or raises an error
 guard-%:
 	@#$(or ${$*}, $(error $* is not set))
+
+## call entrypoint:
+entrypoint: up
+	$(DOCKER_COMPOSE_EXEC) python prod_project/entrypoint.py
 
 ## starts jupyter notebook
 notebook: up
@@ -57,19 +68,19 @@ test: up
 full-check: lint check-type-annotations
 	$(DOCKER_COMPOSE_EXEC) pytest --cov  --cov-report xml --verbose
 
-##builds docker image
+## builds docker image
 build:
-	$(DOCKER_COMPOSE_COMMAND) build app
+	$(DOCKER_COMPOSE_COMMAND) build $(SERVICE_NAME)
 
 ## remove poetry.lock and build docker image
 build-for-dependencies:
 	rm -f *.lock
-	$(DOCKER_COMPOSE_COMMAND) build app
+	$(DOCKER_COMPOSE_COMMAND) build $(SERVICE_NAME)
 
 ## lock dependencies with poetry
 lock-dependencies: build-for-dependencies
-	$(DOCKER_COMPOSE_RUN) bash -c "if [ -e /home/prod-project/poetry.lock.build ]; then \
-        cp /home/prod-project/poetry.lock.build ./poetry.lock; \
+	$(DOCKER_COMPOSE_RUN) bash -c "if [ -e /home/prod_project/poetry.lock.build ]; then \
+        cp /home/prod_project/poetry.lock.build ./poetry.lock; \
     else \
         poetry lock; \
     fi" 
@@ -84,7 +95,7 @@ down:
 
 ## open interactive shell in docker container
 exec-in: up
-	docker exec -it prod-project-template bash
+	docker exec -it $(CONTAINER_NAME) bash
 
 .DEFAULT_GOAL := help
 

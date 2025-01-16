@@ -10,7 +10,7 @@ ENV \
     DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Jerusalem \
     PATH="usr/local/gcloud/google-cloud-sdk/bin:${VIRTUAL_ENV}/bin:${HOME}/.local/bin:${PATH}" \
-    PYTHON_PATH="/app:${PYTHON_PATH}" \
+    PYTHONPATH="/app:${PYTHON_PATH}" \
     BUILD_POETRY_LOCK="${HOME}/poetry.lock.build"
 
 RUN apt-get update \
